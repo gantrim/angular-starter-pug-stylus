@@ -70,7 +70,7 @@ module.exports = function makeWebpackConfig() {
      */
     config.resolve = {
         // only discover files that have those extensions
-        extensions: ['.ts', '.js', '.json', '.css', '.scss', '.html'],
+        extensions: ['.ts', '.js', '.json', '.css', '.styl', '.html'],
     };
 
     var atlOptions = '';
@@ -117,19 +117,23 @@ module.exports = function makeWebpackConfig() {
             // all css required in src/app files will be merged in js files
             {test: /\.css$/, include: root('src', 'app'), loader: 'raw-loader!postcss-loader'},
 
-            // support for .scss files
+            // support for .styl files
             // use 'null' loader in test mode (https://github.com/webpack/null-loader)
             // all css in src/style will be bundled in an external css file
             {
-                test: /\.(scss|sass)$/,
+                test: /\.styl$/,
                 exclude: root('src', 'app'),
                 loader: isTest ? 'null-loader' : ExtractTextPlugin.extract({
                     fallback: 'style-loader',
-                    use: ['css-loader', 'postcss-loader', 'sass-loader']
+                    use: ['to-string-loader', 'css-loader', 'postcss-loader', 'stylus-loader']
                 })
             },
             // all css required in src/app files will be merged in js files
-            {test: /\.(scss|sass)$/, exclude: root('src', 'style'), loader: 'raw-loader!postcss-loader!sass-loader'},
+            {
+                test: /\.styl$/,
+                exclude: root('src', 'style'),
+                loader: 'raw-loader!postcss-loader!stylus-loader'
+            },
 
             // support for .html as raw text
             // todo: change the loader to something that adds a hash to images
@@ -139,7 +143,23 @@ module.exports = function makeWebpackConfig() {
             {
                 test: /\.(pug|jade)$/,
                 use: ['raw-loader', 'pug-html-loader']
-            }
+            },
+
+            // support for Stylus
+            // {
+            //     test: /\.styl$/,
+            //     exclude: root('src', 'app'),
+            //     loader: isTest ? 'null-loader' : ExtractTextPlugin.extract({
+            //         fallback: 'style-loader',
+            //         use: ['css-loader', 'postcss-loader', 'stylus-loader']
+            //     })
+            // },
+
+            // {
+            //     test: /\.styl$/,
+            //     include: root('src', 'app'),
+            //     use: ['to-string-loader', 'css-loader', 'stylus-loader'],
+            // },
         ]
     };
 
@@ -195,14 +215,6 @@ module.exports = function makeWebpackConfig() {
                 tslint: {
                     emitErrors: false,
                     failOnHint: false
-                },
-                /**
-                 * Sass
-                 * Reference: https://github.com/jtangelder/sass-loader
-                 * Transforms .scss files to .css
-                 */
-                sassLoader: {
-                    //includePaths: [path.resolve(__dirname, "node_modules/foundation-sites/scss")]
                 },
                 /**
                  * PostCSS
